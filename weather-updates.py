@@ -49,3 +49,42 @@ def docopt_cmd(func):
     return fn
 
 
+class interact(cmd.Cmd):
+    intro = 'Welcome to my interactive program!' \
+            + ' (type help for a list of commands.)'
+    prompt = '(Enter city to get weather updates) '
+    file = None
+
+    @docopt_cmd
+    def do_weather(self, arg):
+        """Usage: weather <city>"""
+        city = arg['<city>']
+        if city is not None:
+            result = requests.get(
+                'http://api.openweathermap.org/data/2.5/weather?q=' + city + '&appid=c23bdd3c920067eecb8bd0fa3ab4b6dc')
+            if result.status_code == 200:
+                states = result.json()
+                print('Weather:')
+                weather = states['weather']
+                condition = weather[0]
+                picture = condition['description']
+                print(picture)
+            else:
+                print('HTTP ERROR %d.' % result.status_code)
+
+        else:
+            print('BAD USER NAME')
+
+    def do_quit(self, arg):
+        """Quits out of Interactive Mode."""
+
+        print('Good Bye!')
+        exit()
+
+
+opt = docopt(__doc__, sys.argv[1:])
+
+if opt['--interactive']:
+    interact().cmdloop()
+
+print(opt)
